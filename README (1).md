@@ -68,6 +68,8 @@ On first run, `app.py` automatically:
 
 If a listed model name is ever deprecated by Groq, just pick a different one from the sidebar dropdown, or check the current list at [console.groq.com/docs/models](https://console.groq.com/docs/models).
 
+> **Note on model access:** Groq's lineup changes over time, and some models are gated to Enterprise-tier keys only (a regular/free API key gets a `404 model_not_found` error when calling them, even though the model still exists). As of this writing, `openai/gpt-oss-120b`, `openai/gpt-oss-20b`, `groq/compound`, and `groq/compound-mini` are available on the standard developer plan, while `llama-3.3-70b-versatile` and `llama-3.1-8b-instant` currently require an Enterprise plan. If you hit a 404, just switch models in the sidebar.
+
 ---
 
 ## 💻 Run locally
