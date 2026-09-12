@@ -43,10 +43,12 @@ CHUNK_SIZE = 900
 CHUNK_OVERLAP = 150
 
 DEFAULT_GROQ_MODELS = [
-    "llama-3.3-70b-versatile",
-    "llama-3.1-8b-instant",
-    "gemma2-9b-it",
-    "llama3-70b-8192",
+    "openai/gpt-oss-120b",
+    "openai/gpt-oss-20b",
+    "groq/compound",
+    "groq/compound-mini",
+    "llama-3.3-70b-versatile",  # Note: currently Enterprise-tier on Groq; may 404 on free/dev keys
+    "llama-3.1-8b-instant",     # Note: currently Enterprise-tier on Groq; may 404 on free/dev keys
 ]
 
 LEVEL_INSTRUCTIONS = {
@@ -347,8 +349,10 @@ with st.sidebar:
         "Groq model",
         DEFAULT_GROQ_MODELS,
         index=0,
-        help="If a model errors as deprecated, pick another or check "
-        "console.groq.com/docs/models for the current list.",
+        help="If a model returns a 404 'not found / no access' error, your API key's "
+        "plan likely doesn't include it (some models are Enterprise-only) — try a "
+        "different one from this list, or check console.groq.com/docs/models for what "
+        "your key currently has access to.",
     )
 
     st.markdown("### 🎯 Answer style")
@@ -484,7 +488,14 @@ if query:
                     max_tokens=MAX_TOKENS_MAP[length],
                 )
             except Exception as e:
-                answer = f"⚠️ Error calling Groq API: {e}"
+                answer = (
+                    f"⚠️ Error calling Groq API: {e}\n\n"
+                    "If this says the model was not found or you don't have access to it, "
+                    "your API key's plan probably doesn't include that model (some are now "
+                    "Enterprise-only). Try a different model from the sidebar dropdown, or "
+                    "check what your key can access at "
+                    "https://console.groq.com/docs/models."
+                )
 
         if best_score < 0.25 and contexts:
             st.caption(
