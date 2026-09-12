@@ -137,13 +137,37 @@ def ensure_pdf() -> str:
     if os.path.exists(PDF_PATH) and os.path.getsize(PDF_PATH) > 1000:
         return PDF_PATH
 
+    download_ok = False
+    last_error = None
     try:
         import gdown
 
-        url = f"https://drive.google.com/uc?id={GDRIVE_FILE_ID}"
-        gdown.download(url, PDF_PATH, quiet=False, fuzzy=True)
+        # Try a few call styles for compatibility across gdown versions.
+        attempts = [
+            lambda: gdown.download(id=GDRIVE_FILE_ID, output=PDF_PATH, quiet=False),
+            lambda: gdown.download(
+                f"https://drive.google.com/uc?id={GDRIVE_FILE_ID}&export=download",
+                PDF_PATH,
+                quiet=False,
+            ),
+            lambda: gdown.download(
+                f"https://drive.google.com/uc?id={GDRIVE_FILE_ID}", PDF_PATH, quiet=False
+            ),
+        ]
+        for attempt in attempts:
+            try:
+                result = attempt()
+                if result and os.path.exists(PDF_PATH) and os.path.getsize(PDF_PATH) > 1000:
+                    download_ok = True
+                    break
+            except Exception as e:
+                last_error = e
+                continue
     except Exception as e:
-        st.warning(f"Automatic download from Google Drive failed ({e}).")
+        last_error = e
+
+    if not download_ok:
+        st.warning(f"Automatic download from Google Drive failed ({last_error}).")
 
     if not os.path.exists(PDF_PATH) or os.path.getsize(PDF_PATH) < 1000:
         st.warning("Please upload the PECA 2016 PDF manually to continue.")
